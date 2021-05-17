@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.1.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.0 http://maven.apache.org/xsd/assembly-2.1.0.xsd">
+    <id>${project.artifactId}-image</id>
+    <files>
+        <file>
+            <source>target/${project.build.finalName}.jar</source><!-- 相对于当前工程的根目录 -->
+            <outputDirectory>.</outputDirectory><!-- 相对于输出文件的根目录 -->
+            <destName>${project.build.finalName}.jar</destName><!-- 输出文件名称 -->
+            <fileMode>0644</fileMode><!-- 输出文件在unix系统中的权限 -->
+        </file>
+    </files>
+    
+</assembly>

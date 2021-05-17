@@ -1,0 +1,9 @@
+{
+    "properties": [
+        {
+            "name": "spring.mvc.http.encoding.enabled",
+            "type": "java.lang.String",
+            "description": "Description for spring.mvc.http.encoding.enabled."
+        }
+    ]
+}

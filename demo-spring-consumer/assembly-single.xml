@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.1.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.0 http://maven.apache.org/xsd/assembly-2.1.0.xsd">
+    <id>${project.artifactId}-exec</id>
+    <!-- 设置打包之后的文件里面是否包含一个目录 -->
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <!-- 输出的文件格式 -->
+    <formats>
+        <format>tar.gz</format>
+        <format>dir</format>
+    </formats>
+    <!-- 拷贝依赖的jar包 -->
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>lib</outputDirectory>
+            <scope>runtime</scope>
+            <!-- 过滤部分依赖的jar包 -->
+            <!--<excludes>
+                <exclude>${groupId}:${artifactId}</exclude>
+                <exclude>org.springframework.boot:spring-boot-actuator-autoconfigure</exclude>
+            </excludes>-->
+        </dependencySet>
+    </dependencySets>
+    <!-- 处理文件和目录 -->
+    <fileSets>
+        <fileSet>
+            <directory>bin</directory><!-- 相对于当前工程的根目录 -->
+            <outputDirectory>bin/</outputDirectory><!-- 相对于输出文件的根目录 -->
+            <fileMode>0755</fileMode><!-- 输出文件在unix系统中的权限 -->
+            <directoryMode>0755</directoryMode><!-- 输出目录在unix系统中权限 -->
+        </fileSet>
+        <fileSet>
+            <directory>src/main/resources/config</directory>
+            <outputDirectory>conf/</outputDirectory>
+            <fileMode>0644</fileMode>
+            <directoryMode>0755</directoryMode>
+        </fileSet>
+    </fileSets>
+    <!-- 仅处理文件 -->
+    <files>
+        <!--<file>
+            <source>${project.build.directory}/${project.artifactId}-source-${project.version}.jar</source>
+            <outputDirectory>.</outputDirectory>
+            <destName>${project.artifactId}-source-${project.version}.jar</destName>
+        </file>-->
+        <file>
+            <source>README.md</source><!-- 相对于当前工程的根目录 -->
+            <outputDirectory>.</outputDirectory><!-- 相对于输出文件的根目录 -->
+            <destName>README.md</destName><!-- 输出文件名称 -->
+            <fileMode>0644</fileMode><!-- 输出文件在unix系统中的权限 -->
+        </file>
+    </files>
+</assembly>

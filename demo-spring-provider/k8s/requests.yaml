@@ -1,0 +1,110 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spring-provider
+  namespace: default
+  labels:
+    app: spring-provider
+data:
+  application.yaml: |-
+    server:
+      port: 60090
+      servlet:
+        context-path: /
+      tomcat:
+        uri-encoding: UTF-8
+    logging:
+      config: classpath:config/logback-file.xml
+    spring:
+      application:
+        name: spring-provider
+    feign:
+      hystrix:
+        enabled: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-provider
+  namespace: default
+  labels:
+    app: spring-provider
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: spring-provider
+  template:
+    metadata:
+      labels:
+        app: spring-provider
+    spec:
+      serviceAccountName: default
+      tolerations:
+        - key: "CriticalAddonsOnly"
+          operator: "Exists"
+      nodeSelector:
+        kubernetes.io/os: linux
+      imagePullSecrets:
+        - name: image-repo-test
+      containers:
+        - name: spring-provider
+          image: "172.23.107.18:1080/test/spring-provider:1.0.XXX"
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: logs-volume
+              mountPath: /opt/logs
+              readOnly: false
+            - name: config-volume
+              mountPath: /opt/conf
+              readOnly: true
+          ports:
+            - name: http
+              containerPort: 60090
+              protocol: TCP
+          env:
+            - name: spring.config.additional-location
+              value: /opt/conf/application.yaml
+            - name: LOGS_OUTPUT
+              value: file
+            - name: LOGS_DIR
+              value: /opt/logs
+            - name: LOGS_NAMESPACE
+              value: spring-provider
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 60090
+              scheme: HTTP
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+      volumes:
+        - name: logs-volume
+          emptyDir: {}
+        - name: config-volume
+          configMap:
+            name: spring-provider
+            items:
+              - key: application.yaml
+                path: application.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-provider
+  namespace: default
+spec:
+  selector:
+    app: spring-provider
+  type: NodePort
+  ports:
+    - name: http
+      port: 60090
+      targetPort: 60090
+      nodePort: 30090

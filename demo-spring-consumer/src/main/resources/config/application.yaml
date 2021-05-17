@@ -1,0 +1,14 @@
+server:
+  port: 60090
+  servlet:
+    context-path: /
+  tomcat:
+    uri-encoding: UTF-8
+logging:
+  config: classpath:config/logback-console.xml
+spring:
+  application:
+    name: spring-consumer
+feign:
+  hystrix:
+    enabled: true

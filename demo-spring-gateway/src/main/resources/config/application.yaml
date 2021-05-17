@@ -1,0 +1,68 @@
+server:
+  port: 60090
+  servlet:
+    context-path: /
+  tomcat:
+    uri-encoding: UTF-8
+logging:
+  config: classpath:config/logback-console.xml
+spring:
+  application:
+    name: spring-gateway
+  cloud:
+    gateway:
+      #discovery.locator.enabled: true
+      routes:
+      - id: url-proxy-1
+        uri: https://blog.csdn.net
+        predicates:
+        - Path=/csdn
+        filters:
+        - StripPrefix=0
+      - id: url-proxy-2
+        uri: http://spring-consumer.test:30090
+        predicates:
+        - Path=/consumer2/
+        filters:
+        - StripPrefix=1
+      - id: url-proxy-3
+        uri: http://spring-consumer.test:30090
+        predicates:
+        - Path=/consumer3/**
+        filters:
+        - StripPrefix=1
+        - name: RequestRateLimiter
+          args:
+            key-resolver: '#{@ipKeyResolver}'
+            redis-rate-limiter.replenishRate: 1
+            redis-rate-limiter.burstCapacity: 3
+        - name: Hystrix
+          args:
+            name: fallback3
+            fallbackUri: forward:/fallback3
+      - id: url-proxy-4
+        uri: http://spring-consumer.test:30090
+        predicates:
+        - Path=/consumer4/**
+        filters:
+        - StripPrefix=0
+      default-filters:
+      - name: Hystrix
+        args:
+          name: fallbackcmd
+          fallbackUri: forward:/fallbackcontroller
+  redis:
+    host: 127.0.0.1
+    port: 6379
+hystrix:
+  command:
+    fallback3:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 5000
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 10000

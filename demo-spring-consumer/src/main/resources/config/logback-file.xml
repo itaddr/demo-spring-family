@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration xmlns="http://ch.qos.logback/xml/ns/logback" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://ch.qos.logback/xml/ns/logback http://ch.qos.logback/xml/ns/logback/logback.xsd"
+               scan="true" scanPeriod="60 seconds" debug="false">
+    
+    <property name="LOG_ROOT" value="${logs.dir}"/>
+    <property name="LOG_NAMESPACE" value="${logs.namespace}"/>
+    <property name="LOG_PRINT_PATTERN" value="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%thread] [%logger] [%level] %msg %n"/>
+    
+    <!-- 文件输出的格式设置 -->
+    <appender name="INFO_FILE_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 日志日常打印文件 -->
+        <file>${LOG_ROOT}/info-${LOG_NAMESPACE}.log</file>
+        <!-- 配置日志所生成的目录以及生成文件名的规则 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_ROOT}/otherdays/info-${LOG_NAMESPACE}-%d{yyyyMMdd}-%i.log.zip</fileNamePattern>
+            <!-- 如果按天来回滚，则最大保存的天数，之前的都将被清理掉 -->
+            <maxHistory>30</maxHistory>
+            <!-- 日志总保存量 -->
+            <totalSizeCap>1GB</totalSizeCap>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!--文件达到最大时会被压缩和切割 -->
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        
+        <encoder>
+            <!-- 文件输出的日志 的格式 -->
+            <pattern>${LOG_PRINT_PATTERN}</pattern>
+            <!-- 此处设置字符集 -->
+            <charset>UTF-8</charset>
+        </encoder>
+    
+    </appender>
+    
+    <!-- 文件输出的格式设置 -->
+    <appender name="ERROR_FILE_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 日志日常打印文件 -->
+        <file>${LOG_ROOT}/error-${LOG_NAMESPACE}.log</file>
+        <!-- 日志过滤器 -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <!-- 配置日志所生成的目录以及生成文件名的规则 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_ROOT}/otherdays/error-${LOG_NAMESPACE}-%d{yyyyMMdd}-%i.log.zip</fileNamePattern>
+            <!-- 如果按天来回滚，则最大保存的天数，之前的都将被清理掉 -->
+            <maxHistory>30</maxHistory>
+            <!-- 日志总保存量 -->
+            <totalSizeCap>1GB</totalSizeCap>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!--文件达到最大时会被压缩和切割 -->
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        
+        <encoder>
+            <!-- 文件输出的日志 的格式 -->
+            <pattern>${LOG_PRINT_PATTERN}</pattern>
+            <!-- 此处设置字符集 -->
+            <charset>UTF-8</charset>
+        </encoder>
+    
+    </appender>
+    
+    <root level="INFO">
+        <appender-ref ref="INFO_FILE_APPENDER"/>
+        <appender-ref ref="ERROR_FILE_APPENDER"/>
+    </root>
+
+</configuration>

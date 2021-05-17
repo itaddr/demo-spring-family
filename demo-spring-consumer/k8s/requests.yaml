@@ -1,0 +1,126 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spring-consumer
+  namespace: default
+  labels:
+    app: spring-consumer
+data:
+  application.yaml: |-
+    server:
+      port: 60090
+      servlet:
+        context-path: /
+      tomcat:
+        uri-encoding: UTF-8
+    logging:
+      config: classpath:config/logback-file.xml
+    spring:
+      application:
+        name: spring-consumer
+    feign:
+      hystrix:
+        enabled: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-consumer
+  namespace: default
+  labels:
+    app: spring-consumer
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: spring-consumer
+  template:
+    metadata:
+      labels:
+        app: spring-consumer
+    spec:
+      serviceAccountName: default
+      tolerations:
+      - key: "CriticalAddonsOnly"
+        operator: "Exists"
+      nodeSelector:
+        kubernetes.io/os: linux
+      imagePullSecrets:
+      - name: image-repo-test
+      containers:
+      - name: spring-consumer
+        image: "172.23.107.18:1080/test/spring-consumer:1.0.XXX"
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: logs-volume
+          mountPath: /opt/logs
+          readOnly: false
+        - name: config-volume
+          mountPath: /opt/conf
+          readOnly: true
+        ports:
+        - name: http
+          containerPort: 60090
+          protocol: TCP
+        env:
+        - name: spring.config.additional-location
+          value: /opt/conf/application.yaml
+        - name: LOGS_OUTPUT
+          value: file
+        - name: LOGS_DIR
+          value: /opt/logs
+        - name: LOGS_NAMESPACE
+          value: spring-consumer
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 60090
+            scheme: HTTP
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+      volumes:
+      - name: logs-volume
+        emptyDir: {}
+      - name: config-volume
+        configMap:
+          name: spring-consumer
+          items:
+          - key: application.yaml
+            path: application.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-consumer
+  namespace: default
+spec:
+  selector:
+    app: spring-consumer
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 60090
+    targetPort: 60090
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: spring-consumer
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: spring-consumer.test
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: spring-consumer
+          servicePort: 60090
