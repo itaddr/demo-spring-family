@@ -7,6 +7,9 @@
     <groupId>com.itaddr.demo</groupId>
     <artifactId>demo-spring-bom</artifactId>
     <version>1.0.0</version>
+    <modules>
+        <module>../demo-simple-wenflux</module>
+    </modules>
     <packaging>pom</packaging>
 
     <properties>
@@ -36,7 +39,29 @@
         <commons.lang3.version>3.5</commons.lang3.version>
         <swagger.version>2.9.2</swagger.version>
         <java.jwt.version>3.15.0</java.jwt.version>
+        <!-- docker相关配置属性 -->
+        <maven.build.timestamp.format>yyMMddHHmmss</maven.build.timestamp.format>
+        <docker.image.namespace>172.23.107.18:1080/test</docker.image.namespace>
+        <docker.image.name>${project.artifactId}</docker.image.name>
+        <docker.image.version>${project.version}.${maven.build.timestamp}</docker.image.version>
     </properties>
+
+    <distributionManagement>
+        <!--稳定版发布仓库-->
+        <repository>
+            <id>dongyou-releases</id>
+            <name>Dongyou Releases</name>
+            <url>http://192.168.1.227:9999/nexus/content/repositories/releases/</url>
+            <layout>default</layout>
+        </repository>
+        <!--快照版==开发版发布仓库-->
+        <snapshotRepository>
+            <id>dongyou-snapshots</id>
+            <name>Dongyou Snapshots</name>
+            <url>http://192.168.1.227:9999/nexus/content/repositories/snapshots/</url>
+            <layout>default</layout>
+        </snapshotRepository>
+    </distributionManagement>
 
     <repositories>
 
@@ -254,13 +279,56 @@
 
     <build>
 
+        <resources>
+
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.*</include>
+                </includes>
+            </resource>
+
+        </resources>
+
         <pluginManagement>
 
             <plugins>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <executions>
+                        <execution>
+                            <id>default-clean</id>
+                            <phase>clean</phase>
+                            <goals>
+                                <goal>clean</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.1</version>
+                    <executions>
+                        <execution>
+                            <id>default-compile</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                     <configuration>
                         <source>${java.version}</source>
                         <target>${java.version}</target>
@@ -269,14 +337,77 @@
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.2</version>
+                    <executions>
+                        <execution>
+                            <id>default-deploy</id>
+                            <phase>deploy</phase>
+                            <goals>
+                                <goal>deploy</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>2.5.2</version>
+                    <executions>
+                        <execution>
+                            <id>default-install</id>
+                            <phase>install</phase>
+                            <goals>
+                                <goal>install</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.1.0</version>
+                    <version>3.3.0</version>
+                    <!--<executions>
+                        <execution>
+                            <id>assembly-single</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                        </execution>
+                    </executions>-->
                     <configuration>
-                        <!-- 不在打包的后面添加ID作为后缀 -->
-                        <appendAssemblyId>false</appendAssemblyId>
+                        <finalName>${project.artifactId}-exec</finalName><!-- 生成输出目录的tar包名称 -->
+                        <appendAssemblyId>false</appendAssemblyId><!-- 不在打包的后面添加ID作为后缀 -->
+                        <tarLongFileMode>posix</tarLongFileMode><!-- 解决tar大小的限制问题 -->
                         <descriptors>
-                            <descriptor>release.xml</descriptor>
+                            <descriptor>assembly-single.xml</descriptor>
                         </descriptors>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring.boot.version}</version>
+                    <executions>
+                        <execution>
+                            <id>repackage</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <excludes>
+                            <exclude>
+                                <groupId>org.springframework.boot</groupId>
+                                <artifactId>spring-boot-configuration-processor</artifactId>
+                            </exclude>
+                        </excludes>
                     </configuration>
                 </plugin>
 
@@ -284,6 +415,58 @@
                     <groupId>io.fabric8</groupId>
                     <artifactId>docker-maven-plugin</artifactId>
                     <version>0.34.1</version>
+                    <!--<executions>
+                        <execution>
+                            <id>docker-build</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>build</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>docker-push</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>push</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>docker-save</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>save</goal>
+                            </goals>
+                        </execution>
+                    </executions>-->
+                    <configuration>
+                        <!--<dockerHost>tcp://127.0.0.1:2379</dockerHost>-->
+                        <!--<registry>${docker.image.namespace}</registry>-->
+                        <authConfig>
+                            <push>
+                                <username>testdev</username>
+                                <password>TestDev123</password>
+                            </push>
+                        </authConfig>
+                        <images>
+                            <image>
+                                <name>${docker.image.namespace}/${docker.image.name}:${docker.image.version}</name>
+                                <alias>${docker.image.name}</alias>
+                                <build>
+                                    <contextDir>${project.basedir}/docker/</contextDir>
+                                    <args>
+                                        <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+                                    </args>
+                                    <assembly>
+                                        <mode>dir</mode>
+                                        <name>/</name>
+                                        <descriptor>${project.basedir}/assembly-build.xml</descriptor>
+                                    </assembly>
+                                </build>
+                            </image>
+                        </images>
+                        <saveAlias>${docker.image.name}</saveAlias>
+                        <saveFile>target/${docker.image.name}-image.tar.gz</saveFile>
+                    </configuration>
                 </plugin>
 
                 <plugin>
