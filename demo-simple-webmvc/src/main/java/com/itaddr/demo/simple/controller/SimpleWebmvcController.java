@@ -27,7 +27,7 @@ public class SimpleWebmvcController {
         this.userMap = userMap;
     }
 
-    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @GetMapping(value = "/list")
     public String users(Model model) {
         model.addAttribute("title", "用户列表");
         model.addAttribute("users", prop.getUsers());
@@ -36,13 +36,13 @@ public class SimpleWebmvcController {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/get", method = RequestMethod.GET)
+    @GetMapping(value = "/get")
     public ResultVO<UserVO> getUser(@RequestParam("access_token") String accessToken, @RequestParam("openid") String usercode) {
         return ResultVO.ok(userMap.get(usercode));
     }
 
     /*@ResponseBody*/
-    @RequestMapping(value = "/entity", method = RequestMethod.GET)
+    @GetMapping(value = "/entity")
     public ResponseEntity<String> simpleRes(@RequestParam("access_token") String accessToken, @RequestParam("openid") String usercode) {
         // body content
         String bodyString = "{\"code\":10001,\"msg\":\"success\"}";
@@ -57,7 +57,7 @@ public class SimpleWebmvcController {
         return ResponseEntity.ok().headers(headers).body(bodyString);
     }
 
-    @RequestMapping(value = "/testvoid", method = RequestMethod.GET)
+    @GetMapping(value = "/testvoid")
     public void testvoid() {
 
     }
