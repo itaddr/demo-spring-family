@@ -51,8 +51,7 @@
 
         <!-- 日志记录器的滚动策略，按日期，按大小记录 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOGBACK_LOG_PATH}/otherdays/debug-${APPLICATION_NAME}-%d{yyyyMMdd}-%i.log.zip
-            </fileNamePattern>
+            <fileNamePattern>${LOGBACK_LOG_PATH}/otherdays/debug-${APPLICATION_NAME}-%d{yyyyMMdd}-%i.log.zip</fileNamePattern>
             <!-- 如果按天来回滚，则最大保存的天数，之前的都将被清理掉 -->
             <maxHistory>7</maxHistory>
             <!-- 日志总保存量 -->
@@ -156,8 +155,7 @@
 
         <!-- 日志记录器的滚动策略，按日期，按大小记录 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOGBACK_LOG_PATH}/otherdays/error-${APPLICATION_NAME}-%d{yyyyMMdd}-%i.log.zip
-            </fileNamePattern>
+            <fileNamePattern>${LOGBACK_LOG_PATH}/otherdays/error-${APPLICATION_NAME}-%d{yyyyMMdd}-%i.log.zip</fileNamePattern>
             <!-- 如果按天来回滚，则最大保存的天数，之前的都将被清理掉 -->
             <maxHistory>7</maxHistory>
             <!-- 日志总保存量 -->
@@ -191,7 +189,10 @@
         level:用来设置打印级别，大小写无关：TRACE, DEBUG, INFO, WARN, ERROR, ALL 和 OFF，
               还有一个特俗值INHERITED或者同义词NULL，代表强制执行上级的级别。
               如果未设置此属性，那么当前logger将会继承上级的级别。
-        addtivity:是否向上级logger传递打印信息。默认是true。
+        additivity: children-logger是否使用 rootLogger配置的appender进行输出。
+                    false：表示只用当前logger的appender-ref。
+                    true：表示当前logger的appender-ref和rootLogger的appender-ref都有效。
+                    默认是true。
         <logger name="org.springframework.web" level="info"/>
         <logger name="org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor" level="INFO"/>
     -->
@@ -212,6 +213,14 @@
 
     <!--<springProfile name="dev">
         <logger name="com.itaddr.demo" level="debug"/>
+    </springProfile>-->
+
+    <!--<springProfile name="dev | test">
+        configuration to be enabled when the "dev" or "test" profiles are active
+    </springProfile>-->
+
+    <!--<springProfile name="!production">
+        configuration to be enabled when the "production" profile is not active
     </springProfile>-->
 
     <springProfile name="local">
