@@ -59,7 +59,7 @@ public class SimpleWebmvcController {
 
     @GetMapping(value = "/testvoid")
     public void testvoid() {
-
     }
+
 
 }

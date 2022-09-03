@@ -3,6 +3,7 @@ package com.itaddr.demo.simple;
 import org.junit.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Date;
 
@@ -27,6 +28,11 @@ public class ResponseEntityTest {
         System.out.println(response.toString());
 
 
+    }
+
+    @Test
+    public void test02() {
+        System.out.println(new BCryptPasswordEncoder().encode("NaCos@2022.8.24"));
     }
 
 }

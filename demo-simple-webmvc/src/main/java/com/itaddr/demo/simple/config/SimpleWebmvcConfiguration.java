@@ -1,22 +1,27 @@
 package com.itaddr.demo.simple.config;
 
-import com.itaddr.demo.simple.mvc.TokenInterceptorHandler;
 import com.itaddr.demo.simple.domain.UserVO;
 import com.itaddr.demo.simple.mvc.SimpleInterceptorHandler;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.itaddr.demo.simple.mvc.TokenInterceptorHandler;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class SimpleWebmvcConfiguration implements WebMvcConfigurer {
 
-    @Autowired
-    private SimpleWebmvcProperties prop;
+    private final SimpleWebmvcProperties prop;
 
     @Bean(name = "userMap", value = "userMap")
     public Map<String, UserVO> userMap() {
@@ -49,5 +54,15 @@ public class SimpleWebmvcConfiguration implements WebMvcConfigurer {
         //filterRegistrationBean.setOrder(2);
         return filterRegistrationBean;
     }*/
+    @Override
+    public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
+        final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(10);
+        executor.setQueueCapacity(100);
+        executor.setMaxPoolSize(25);
+
+        configurer.setTaskExecutor(executor);
+        configurer.setDefaultTimeout(60000L);
+    }
 
 }
